@@ -74,6 +74,18 @@ def build_teaches(c):
         );
     ''')
 
+def build_assigns(c):
+    c.execute('''
+        CREATE TABLE assigns(
+            prof        INTEGER,
+            assignment  INTEGER,
+            class       INTEGER,
+            FOREIGN KEY(prof) REFERENCES person(uuid),
+            FOREIGN KEY(assignment) REFERENCES assignment(aid),
+            FOREIGN KEY(class) REFERENCES class(cid)
+        );
+    ''')
+
 def build_submits(c):
     c.execute('''
         CREATE TABLE submits(
@@ -120,6 +132,7 @@ def build_database(name='database.db'):
     build_belongs_to(c)
     build_TAs_for(c)
     build_teaches(c)
+    build_assigns(c)
     build_submits(c)
     build_provides(c)
     build_contains(c)
@@ -151,8 +164,9 @@ def pop_database(name='database.db'):
     c.execute("INSERT INTO person values(1, 's1', 'John Doe');")      # student1
     c.execute("INSERT INTO person values(2, 's2', 'Jane Doe');")      # student2
     c.execute("INSERT INTO person values(3, 't1', 'Joe Blow');")      # ta1
-    c.execute("INSERT INTO person values(4, 't2', 'Jack Shmo');")      # ta2
-    c.execute("INSERT INTO person values(5, 'p1', 'Joan Grow');")      # prof1
+    c.execute("INSERT INTO person values(4, 't2', 'Jack Shmo');")     # ta2
+    c.execute("INSERT INTO person values(5, 'p1', 'Joan Grow');")     # prof1
+    c.execute("INSERT INTO person values(6, 's3', 'Jim Bough');")     # student3
     
     c.execute("INSERT INTO class values(1, 'cmput0')")          # class1
     c.execute("INSERT INTO class values(2, 'cmput1')")          # class2
@@ -160,6 +174,7 @@ def pop_database(name='database.db'):
     c.execute("INSERT INTO belongs_to values(1, 1)")            # student1 in class1
     c.execute("INSERT INTO belongs_to values(2, 1)")            # student2 in class1
     c.execute("INSERT INTO belongs_to values(2, 2)")            # student2 in class2
+    c.execute("INSERT INTO belongs_to values(6, 2)")            # student3 in class2
 
     c.execute("INSERT INTO tas_for values(3, 1)")               # ta1 TAs class1
     c.execute("INSERT INTO tas_for values(4, 2)")               # ta2 TAs class2
@@ -171,14 +186,19 @@ def pop_database(name='database.db'):
     c.execute("INSERT INTO source values(2, 'base code')")      # source2 is base code
     c.execute("INSERT INTO source values(3, 'f1')")             # source3 is submitted
     c.execute("INSERT INTO source values(4, 'f2')")             # source4 is submitted
+    c.execute("INSERT INTO source values(5, 'f3')")             # source5 is submitted
 
-    c.execute("INSERT INTO assignment values(1, 'asgn1')")      # assignment 11
+    c.execute("INSERT INTO assignment values(1, 'asgn1')")      # assignment 1
+
+    c.execute("INSERT INTO assigns values(5, 1, 1)")            # prof assigns assignment 1 for class 1
+    c.execute("INSERT INTO assigns values(5, 1, 2)")            # prof assigns assignment 1 for class 2
 
     c.execute("INSERT INTO provides values(1, 1)")              # asgn1 provides source1
     c.execute("INSERT INTO provides values(1, 2)")              # asgn1 provides source2
 
     c.execute("INSERT INTO solution values(1)")                 # solution 1
     c.execute("INSERT INTO solution values(2)")                 # solution 2
+    c.execute("INSERT INTO solution values(3)")                 # solution 3
 
     c.execute("INSERT INTO contains values(1, 1)")              # sol1 contains source1
     c.execute("INSERT INTO contains values(1, 2)")              # sol1 contains source2
@@ -186,10 +206,15 @@ def pop_database(name='database.db'):
 
     c.execute("INSERT INTO contains values(2, 1)")              # sol2 contains source1
     c.execute("INSERT INTO contains values(2, 2)")              # sol2 contains source2
-    c.execute("INSERT INTO contains values(2, 4)")              # sol3 contains source3
+    c.execute("INSERT INTO contains values(2, 4)")              # sol2 contains source4
+
+    c.execute("INSERT INTO contains values(3, 1)")              # sol3 contains source1
+    c.execute("INSERT INTO contains values(3, 2)")              # sol3 contains source2
+    c.execute("INSERT INTO contains values(3, 5)")              # sol3 contains source5
 
     c.execute("INSERT INTO submits values(1, 1, 1, '2017-07-28')") # student1 submits sol1 for a1 on date
     c.execute("INSERT INTO submits values(2, 2, 1, '2017-07-29')") # student2 submits sol2 for a1 on date
+    c.execute("INSERT INTO submits values(6, 3, 1, '2017-07-30')") # student3 submits sol3 for a1 on date
     
     print("FINISHED POPULATING DATABASE WITH SIMPLE VALUES.")
 
@@ -205,7 +230,8 @@ def pop_database(name='database.db'):
 
 def main():
     tables = [  'person', 'class', 'solution', 'assignment', 'source',
-                'belongs_to', 'tas_for', 'teaches', 'submits', 'provides', 'contains']
+                'belongs_to', 'tas_for', 'teaches', 'submits', 'provides', 'contains',
+                'assigns']
     try:
         build_database()
     except:
